@@ -1,12 +1,461 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文档下载中心</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2ea44f;
+            --primary-dark: #2c974b;
+            --text-color: #24292e;
+            --light-bg: #f6f8fa;
+            --card-bg: #ffffff;
+            --border-color: #e1e4e8;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --shadow-hover: 0 14px 28px rgba(0,0,0,0.12), 0 10px 10px rgba(0,0,0,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #2ea44f 0%, #2c974b 100%);
+            color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-filter {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6a737d;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .document-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .document-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .pdf { background: #F40F02; }
+        .doc { background: #2B579A; }
+        .zip { background: #805AD5; }
+        .image { background: #00A859; }
+        .code { background: #24292e; }
+        .txt { background: #6c757d; }
+
+        .file-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .file-info p {
+            color: #6a737d;
+            font-size: 0.9rem;
+        }
+
+        .card-body {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .description {
+            color: #586069;
+            margin-bottom: 15px;
+        }
+
+        .file-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #6a737d;
+            font-size: 0.85rem;
+            margin-top: auto;
+        }
+
+        .card-footer {
+            padding: 15px 20px;
+            background: var(--light-bg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .download-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .download-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #6a737d;
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #6a737d;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .documents-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .search-filter {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>文档下载</h1>
-    <ul>
-        <li><a href="普通高中教科书·数学（A版）阅读提示.pdf" download>普通高中教科书·数学（A版）阅读提示.pdf</a></li>
-    </ul>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cloud-download-alt"></i> 文档下载中心</h1>
+            <p class="subtitle">在这里找到您需要的所有文档和资源文件</p>
+        </header>
+
+        <div class="search-filter">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="搜索文档...">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="pdf">PDF</button>
+                <button class="filter-btn" data-filter="doc">文档</button>
+                <button class="filter-btn" data-filter="zip">压缩包</button>
+                <button class="filter-btn" data-filter="code">代码</button>
+            </div>
+        </div>
+
+        <div class="documents-grid" id="documentsGrid">
+            <!-- 文档卡片将通过JavaScript动态生成 -->
+        </div>
+
+        <footer>
+            <p>© 2023 文档下载中心 | 由 GitHub Pages 提供支持</p>
+        </footer>
+    </div>
+
+    <script>
+        // 文档数据
+        const documents = [
+            {
+                id: 1,
+                title: "用户使用手册",
+                description: "详细的产品使用说明和操作指南，包含所有功能的使用方法。",
+                type: "pdf",
+                size: "2.4 MB",
+                date: "2023-10-15",
+                url: "user-manual.pdf",
+                icon: "file-pdf"
+            },
+            {
+                id: 2,
+                title: "技术规范文档",
+                description: "API参考、架构设计和开发规范，适合开发人员参考。",
+                type: "doc",
+                size: "1.8 MB",
+                date: "2023-09-28",
+                url: "technical-specification.docx",
+                icon: "file-word"
+            },
+            {
+                id: 3,
+                title: "安装指南",
+                description: "软件安装和配置步骤，包含系统要求和环境配置。",
+                type: "pdf",
+                size: "1.2 MB",
+                date: "2023-11-05",
+                url: "installation-guide.pdf",
+                icon: "file-pdf"
+            },
+            {
+                id: 4,
+                title: "示例代码包",
+                description: "包含各种使用场景的示例代码和项目模板。",
+                type: "zip",
+                size: "5.7 MB",
+                date: "2023-10-20",
+                url: "example-code.zip",
+                icon: "file-archive"
+            },
+            {
+                id: 5,
+                title: "API参考文档",
+                description: "完整的API接口说明和调用示例，支持多种编程语言。",
+                type: "pdf",
+                size: "3.1 MB",
+                date: "2023-11-12",
+                url: "api-reference.pdf",
+                icon: "file-pdf"
+            },
+            {
+                id: 6,
+                title: "项目源码",
+                description: "完整的项目源代码，包含所有模块和组件。",
+                type: "zip",
+                size: "12.5 MB",
+                date: "2023-11-01",
+                url: "source-code.zip",
+                icon: "file-archive"
+            },
+            {
+                id: 7,
+                title: "设计资源",
+                description: "UI设计稿、图标和样式规范文件。",
+                type: "zip",
+                size: "8.3 MB",
+                date: "2023-10-25",
+                url: "design-resources.zip",
+                icon: "file-archive"
+            },
+            {
+                id: 8,
+                title: "配置文件示例",
+                description: "各种环境下的配置文件模板和使用说明。",
+                type: "code",
+                size: "0.8 MB",
+                date: "2023-11-08",
+                url: "config-examples.zip",
+                icon: "file-code"
+            }
+        ];
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            renderDocuments(documents);
+            setupEventListeners();
+        });
+
+        // 渲染文档卡片
+        function renderDocuments(docs) {
+            const grid = document.getElementById('documentsGrid');
+            
+            if (docs.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-file-search"></i>
+                        <h3>未找到匹配的文档</h3>
+                        <p>尝试使用其他搜索关键词或筛选条件</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = docs.map(doc => `
+                <div class="document-card" data-type="${doc.type}">
+                    <div class="card-header">
+                        <div class="file-icon ${doc.type}">
+                            <i class="fas fa-${doc.icon}"></i>
+                        </div>
+                        <div class="file-info">
+                            <h3>${doc.title}</h3>
+                            <p>${doc.type.toUpperCase()} 文件</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="description">${doc.description}</p>
+                        <div class="file-meta">
+                            <span><i class="far fa-calendar-alt"></i> ${doc.date}</span>
+                            <span><i class="fas fa-weight-hanging"></i> ${doc.size}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="${doc.url}" class="download-btn" download>
+                            <i class="fas fa-download"></i> 下载文档
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 搜索功能
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', filterDocuments);
+            
+            // 筛选功能
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 更新活动按钮
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    filterDocuments();
+                });
+            });
+        }
+
+        // 筛选文档
+        function filterDocuments() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+            
+            const filteredDocs = documents.filter(doc => {
+                const matchesSearch = doc.title.toLowerCase().includes(searchTerm) || 
+                                     doc.description.toLowerCase().includes(searchTerm);
+                const matchesFilter = activeFilter === 'all' || doc.type === activeFilter;
+                
+                return matchesSearch && matchesFilter;
+            });
+            
+            renderDocuments(filteredDocs);
+        }
+    </script>
 </body>
 </html>
